@@ -1,4 +1,6 @@
-const { promisify } = require('util');
+const {
+  promisify
+} = require('util');
 const User = require('./../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
@@ -25,7 +27,11 @@ exports.signUp = catchAsync(async (req, res, next) => {
 });
 
 exports.login = catchAsync(async (req, res, next) => {
-  const { email, password, passwordConfirm } = req.body;
+  const {
+    email,
+    password,
+    passwordConfirm
+  } = req.body;
 
   if (!email || !passwordConfirm || !password)
     return next(new AppError('Please provide email and password!', 400));
@@ -93,3 +99,22 @@ exports.restrictTo = (...roles) => {
     next();
   };
 };
+
+exports.forgotPassword = catchAsync(async (req, res, next) => {
+  // get user based on posted email
+  const user = await User.findOne({
+    email: req.body.email
+  });
+  if (!user) {
+    return next(new AppError('There is no user with the given email', 404));
+  }
+  // gen random token
+  const resetToken = user.createPasswordResetToken();
+  await user.save({
+    validateBeforeSave: false
+  });
+
+  // send it to user email
+});
+
+exports.resetPassword = (req, res, next) => {};

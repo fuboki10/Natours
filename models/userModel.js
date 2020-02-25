@@ -1,8 +1,8 @@
 const mongooose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcrypt');
-const catchAsync = require('../utils/catchAsync');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 
 // name email photo password passwordConfirm
 
@@ -34,7 +34,7 @@ const userSchema = mongooose.Schema({
     select: false,
     validate: {
       // this only works on CREATE and SAVE!!!!
-      validator: function(el) {
+      validator: function (el) {
         return el === this.password;
       },
       message: 'Passwords are not the same'
@@ -44,6 +44,8 @@ const userSchema = mongooose.Schema({
     type: Date,
     select: false
   },
+  passwordResetToken: String,
+  passwordResetExpires: Date,
   role: {
     type: String,
     enum: ['user', 'admin', 'lead-guide', 'guide'],
@@ -51,7 +53,7 @@ const userSchema = mongooose.Schema({
   }
 });
 
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
 
   this.password = await bcrypt.hash(this.password, 12);
@@ -60,17 +62,19 @@ userSchema.pre('save', async function(next) {
   next();
 });
 
-userSchema.methods.correctPassword = async function(inputPassowrd) {
+userSchema.methods.correctPassword = async function (inputPassowrd) {
   return await bcrypt.compare(inputPassowrd, this.password);
 };
 
-userSchema.methods.generateAuthToken = async function() {
-  return await jwt.sign({ id: this._id }, process.env.JWT_KEY, {
+userSchema.methods.generateAuthToken = async function () {
+  return await jwt.sign({
+    id: this._id
+  }, process.env.JWT_KEY, {
     expiresIn: process.env.JWT_EXPIRES_IN
   });
 };
 
-userSchema.methods.changedPasswordAfter = function(JWTTimestamp) {
+userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
   if (this.passwordChangedAt) {
     const changedTimestamp = parseInt(
       this.passwordChangedAt.getTime() / 1000,
@@ -81,6 +85,19 @@ userSchema.methods.changedPasswordAfter = function(JWTTimestamp) {
   }
 
   return false;
+};
+
+userSchema.methods.createPasswordResetToken = function () {
+  const restToken = crypto.randomBytes(32).toString('hex');
+
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(restToken)
+    .digest('hex');
+
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+
+  return restToken;
 };
 
 const User = mongooose.model('User', userSchema);
