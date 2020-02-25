@@ -39,6 +39,10 @@ const userSchema = mongooose.Schema({
       },
       message: 'Passwords are not the same'
     }
+  },
+  passwordChangedAt: {
+    type: Date,
+    select: false
   }
 });
 
@@ -59,6 +63,19 @@ userSchema.methods.generateAuthToken = async function() {
   return await jwt.sign({ id: this._id }, process.env.JWT_KEY, {
     expiresIn: process.env.JWT_EXPIRES_IN
   });
+};
+
+userSchema.methods.changedPasswordAfter = function(JWTTimestamp) {
+  if (this.passwordChangedAt) {
+    const changedTimestamp = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10
+    );
+
+    return JWTTimestamp < changedTimestamp;
+  }
+
+  return false;
 };
 
 const User = mongooose.model('User', userSchema);
