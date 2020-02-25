@@ -43,6 +43,11 @@ const userSchema = mongooose.Schema({
   passwordChangedAt: {
     type: Date,
     select: false
+  },
+  role: {
+    type: String,
+    enum: ['user', 'admin', 'lead-guide', 'guide'],
+    default: 'user'
   }
 });
 
