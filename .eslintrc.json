@@ -2,7 +2,8 @@
   "extends": ["google"],
   "rules": {
     "linebreak-style": "off",
-    "no-console": "warn"
+    "no-console": "warn",
+    "prefer-destructuring": "warn"
   },
   "env": {
     "es6": true
