@@ -1,4 +1,6 @@
-const { promisify } = require('util');
+const {
+  promisify
+} = require('util');
 const User = require('./../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
@@ -27,7 +29,11 @@ exports.signUp = catchAsync(async (req, res, next) => {
 });
 
 exports.login = catchAsync(async (req, res, next) => {
-  const { email, password, passwordConfirm } = req.body;
+  const {
+    email,
+    password,
+    passwordConfirm
+  } = req.body;
 
   if (!email || !passwordConfirm || !password)
     return next(new AppError('Please provide email and password!', 400));
@@ -182,7 +188,11 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   // get user from collection
   const user = await User.findById(req.user.id).select('+password');
 
-  const { currentPassword, newPassword, newPasswordConfirm } = req.body;
+  const {
+    currentPassword,
+    newPassword,
+    newPasswordConfirm
+  } = req.body;
   // check if posted current password is correct
   if (!currentPassword)
     return next(new AppError('Please enter your password!', 400));
