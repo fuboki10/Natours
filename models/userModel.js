@@ -3,6 +3,7 @@ const validator = require('validator');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const { promisify } = require('util');
 
 // name email photo password passwordConfirm
 
@@ -34,7 +35,7 @@ const userSchema = mongooose.Schema({
     select: false,
     validate: {
       // this only works on CREATE and SAVE!!!!
-      validator: function (el) {
+      validator: function(el) {
         return el === this.password;
       },
       message: 'Passwords are not the same'
@@ -53,7 +54,7 @@ const userSchema = mongooose.Schema({
   }
 });
 
-userSchema.pre('save', async function (next) {
+userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
 
   this.password = await bcrypt.hash(this.password, 12);
@@ -62,26 +63,30 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
-userSchema.pre('save', function (next) {
+userSchema.pre('save', function(next) {
   if (!this.isModified('password') || this.isNew) return next();
 
   this.passwordChangedAt = Date.now() - 1000;
   next();
 });
 
-userSchema.methods.correctPassword = async function (inputPassowrd) {
+userSchema.methods.correctPassword = async function(inputPassowrd) {
   return await bcrypt.compare(inputPassowrd, this.password);
 };
 
-userSchema.methods.generateAuthToken = async function () {
-  return await jwt.sign({
-    id: this._id
-  }, process.env.JWT_KEY, {
-    expiresIn: process.env.JWT_EXPIRES_IN
-  });
+userSchema.methods.generateAuthToken = async function() {
+  return await promisify(jwt.sign)(
+    {
+      id: this._id
+    },
+    process.env.JWT_KEY,
+    {
+      expiresIn: process.env.JWT_EXPIRES_IN
+    }
+  );
 };
 
-userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
+userSchema.methods.changedPasswordAfter = function(JWTTimestamp) {
   if (this.passwordChangedAt) {
     const changedTimestamp = parseInt(
       this.passwordChangedAt.getTime() / 1000,
@@ -94,7 +99,7 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
   return false;
 };
 
-userSchema.methods.createPasswordResetToken = function () {
+userSchema.methods.createPasswordResetToken = function() {
   const restToken = crypto.randomBytes(32).toString('hex');
 
   this.passwordResetToken = crypto

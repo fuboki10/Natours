@@ -3,7 +3,8 @@
   "rules": {
     "linebreak-style": "off",
     "no-console": "warn",
-    "prefer-destructuring": "warn"
+    "prefer-destructuring": "warn",
+    "prefer-const": "warn"
   },
   "env": {
     "es6": true

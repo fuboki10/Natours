@@ -1,6 +1,4 @@
-const {
-  promisify
-} = require('util');
+const { promisify } = require('util');
 const User = require('./../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
@@ -29,11 +27,7 @@ exports.signUp = catchAsync(async (req, res, next) => {
 });
 
 exports.login = catchAsync(async (req, res, next) => {
-  const {
-    email,
-    password,
-    passwordConfirm
-  } = req.body;
+  const { email, password, passwordConfirm } = req.body;
 
   if (!email || !passwordConfirm || !password)
     return next(new AppError('Please provide email and password!', 400));
@@ -117,7 +111,9 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   });
 
   // send it to user email
-  const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${resetToken}`;
+  const resetURL = `${req.protocol}://${req.get(
+    'host'
+  )}/api/v1/users/resetPassword/${resetToken}`;
 
   const message = `Forgot your password? Submit a PATCH request with your new password and
    passwordConfirm to: ${resetURL}.\nIf you didn't forget the password, 
@@ -141,7 +137,12 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
       validateBeforeSave: false
     });
 
-    return next(new AppError('There was an error sending the email. Try again later!', 500));
+    return next(
+      new AppError(
+        'There was an error sending the email. Try again later!',
+        500
+      )
+    );
   }
 });
 
@@ -159,8 +160,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     }
   });
   // if token has not expired, and there is user, set the new password
-  if (!user)
-    return next(new AppError('Token is invalid or has expired', 400));
+  if (!user) return next(new AppError('Token is invalid or has expired', 400));
 
   user.password = req.body.password;
   user.passwordConfirm = req.body.passwordConfirm;
@@ -170,7 +170,36 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   // update changedPasswordAt property for user
 
   // log the user in, send JWT
-  const token = user.generateAuthToken();
+  const token = await user.generateAuthToken();
+
+  res.status(200).json({
+    status: 'success',
+    token
+  });
+});
+
+exports.updatePassword = catchAsync(async (req, res, next) => {
+  // get user from collection
+  const user = await User.findById(req.user.id).select('+password');
+
+  const { currentPassword, newPassword, newPasswordConfirm } = req.body;
+  // check if posted current password is correct
+  if (!currentPassword)
+    return next(new AppError('Please enter your password!', 400));
+
+  const correctPassword = await user.correctPassword(currentPassword);
+  if (!correctPassword) return next(new AppError('Wrong password!', 401));
+
+  // if so, update password
+  if (!newPassword || !newPasswordConfirm || newPassword !== newPasswordConfirm)
+    return next(new AppError('Please enter your new password!', 400));
+
+  user.password = newPassword;
+  user.passwordConfirm = newPasswordConfirm;
+
+  await user.save();
+  // log user in, send JWT
+  const token = await user.generateAuthToken();
 
   res.status(200).json({
     status: 'success',
