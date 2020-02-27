@@ -82,8 +82,8 @@ userSchema.methods.correctPassword = async function (inputPassowrd) {
   return await bcrypt.compare(inputPassowrd, this.password);
 };
 
-userSchema.methods.generateAuthToken = async function () {
-  return await promisify(jwt.sign)({
+userSchema.methods.generateAuthToken = function () {
+  return jwt.sign({
       id: this._id
     },
     process.env.JWT_KEY, {
