@@ -4,6 +4,11 @@ const AppError = require('../utils/appError');
 const filterObj = require('../utils/filterObj');
 const factory = require('./handlerFactory');
 
+exports.getMe = (req, res, next) => {
+  req.params.id = req.user.id;
+  next();
+};
+
 exports.deleteMe = catchAsync(async (req, res, next) => {
   await User.findByIdAndRemove(req.user.id);
 
