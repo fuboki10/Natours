@@ -1,5 +1,11 @@
 # Natours
 
+[![GitHub contributors](https://img.shields.io/github/contributors/fuboki10/Natours)](https://github.com/fuboki10/Natours/contributors)
+[![GitHub issues](https://img.shields.io/github/issues/fuboki10/Natours)](https://github.com/fuboki10/Natours/issues)
+[![GitHub forks](https://img.shields.io/github/forks/fuboki10/Natours)](https://github.com/fuboki10/Natours/network)
+[![GitHub stars](https://img.shields.io/github/stars/fuboki10/Natours)](https://github.com/fuboki10/Natours/stargazers)
+[![GitHub license](https://img.shields.io/github/license/fuboki10/Natours)](https://github.com/fuboki10/Natours/blob/master/LICENSE)
+
 ## Table of Contents
 
 * [About the Project](#about-the-project)
@@ -12,7 +18,6 @@
 * [License](#license)
 * [Contact](#contact)
 * [Acknowledgements](#acknowledgements)
-
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
